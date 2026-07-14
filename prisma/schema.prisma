@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  WORKER
+}
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  password       String
+  role           Role     @default(WORKER)
+  managedWorkers Worker[] @relation("AdminWorkers")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Worker {
+  id              String           @id @default(cuid())
+  name            String
+  phone           String?
+  adminId         String
+  admin           User             @relation("AdminWorkers", fields: [adminId], references: [id])
+  deliveryRecords DeliveryRecord[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  pricePerPackage Float
+
+  @@index([adminId])
+}
+
+model DeliveryRecord {
+  id          String   @id @default(cuid())
+  workerId    String
+  worker      Worker   @relation(fields: [workerId], references: [id])
+  date        DateTime
+  quantity    Int
+  createdAt   DateTime @default(now())
+  totalAmount Float
+
+  @@index([workerId, date])
+}
