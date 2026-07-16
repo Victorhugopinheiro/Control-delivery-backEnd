@@ -1,5 +1,6 @@
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../../lib/jwt.js";
 import { prisma } from "../../../lib/prisma.js";
+import type { Prisma } from "../../../generated/prisma/client.js";
 import { hashToken } from "../../../lib/tokenHash.js";
 import { AuthServiceError } from "./authErrors.js";
 import type { AuthenticatedUser } from "./loginUserService.js";
@@ -41,7 +42,7 @@ class RefreshUserService {
       const newRefreshBundle = await signRefreshToken(user.id);
       const newTokenHash = hashToken(newRefreshBundle.token);
 
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const createdSession = await tx.refreshSession.create({
           data: {
             userId: user.id,
