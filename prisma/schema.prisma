@@ -53,7 +53,7 @@ model Worker {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   pricePerPackage Float
-
+  image String?
   @@index([adminId])
 }
 
