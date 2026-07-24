@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import bcrypt from "bcryptjs";
 import { prisma } from "../../lib/prisma.js";
 import { uploadImageToCloudinary } from "../../lib/cloudinary.js";
 import { AuthServiceError } from "../user/auth/authErrors.js";
@@ -6,7 +7,10 @@ import type { AuthUser } from "../../middleware/requireAuth.js";
 
 type AddWorkerInput = {
     name: string;
+    email: string;
+    password: string;
     phone: string | undefined;
+    address: string | undefined;
     pricePerPackage: number;
     imageFile: Express.Multer.File | undefined;
     authUser: AuthUser | undefined;
@@ -22,24 +26,37 @@ class AddWorkerService {
             throw new AuthServiceError("Forbidden", 403);
         }
 
+        const existingUser = await prisma.user.findUnique({ where: { email: input.email } });
+
+        if (existingUser) {
+            throw new AuthServiceError("Email already in use", 409);
+        }
+
         let imageUrl: string | null = null;
 
         if (input.imageFile) {
             imageUrl = await uploadImageToCloudinary(input.imageFile);
         }
 
-        const image = imageUrl ? { image: imageUrl } : {};
+        const passwordHash = await bcrypt.hash(input.password, 10);
 
-        const phone = input.phone ? { phone: input.phone } : {};
-
-        const worker = await prisma.worker.create({
+        const worker = await prisma.user.create({
             data: {
                 name: input.name,
-                pricePerPackage: input.pricePerPackage,
-                adminId: input.authUser.userId,
-                ...(input.phone ? { phone: input.phone } : {}),
-                ...(imageUrl ? { image: imageUrl } : {}),
+                email: input.email,
+                password: passwordHash,
+                role: "WORKER",
+                workerProfile: {
+                    create: {
+                        adminId: input.authUser.userId,
+                        pricePerPackage: input.pricePerPackage,
+                        ...(input.phone ? { phone: input.phone } : {}),
+                        ...(input.address ? { address: input.address } : {}),
+                        ...(imageUrl ? { image: imageUrl } : {}),
+                    },
+                },
             },
+            include: { workerProfile: true },
         });
 
         return worker;

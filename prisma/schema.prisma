@@ -18,15 +18,30 @@ enum Role {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  name           String
-  email          String   @unique
-  password       String
-  role           Role     @default(WORKER)
+  id              String           @id @default(cuid())
+  name            String
+  email           String           @unique
+  password        String
+  role            Role             @default(ADMIN)
   refreshSessions RefreshSession[]
-  managedWorkers Worker[] @relation("AdminWorkers")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  workerProfile   WorkerProfile?
+  managedWorkers  WorkerProfile[]  @relation("AdminWorkers")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model WorkerProfile {
+  userId          String           @id
+  user            User             @relation(fields: [userId], references: [id])
+  adminId         String
+  admin           User             @relation("AdminWorkers", fields: [adminId], references: [id])
+  phone           String?
+  pricePerPackage Float
+  image           String?
+  address         String?
+  deliveryRecords DeliveryRecord[]
+
+  @@index([adminId])
 }
 
 model RefreshSession {
@@ -43,24 +58,10 @@ model RefreshSession {
   @@index([expiresAt])
 }
 
-model Worker {
-  id              String           @id @default(cuid())
-  name            String
-  phone           String?
-  adminId         String
-  admin           User             @relation("AdminWorkers", fields: [adminId], references: [id])
-  deliveryRecords DeliveryRecord[]
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  pricePerPackage Float
-  image String?
-  @@index([adminId])
-}
-
 model DeliveryRecord {
   id          String   @id @default(cuid())
   workerId    String
-  worker      Worker   @relation(fields: [workerId], references: [id])
+  worker      WorkerProfile     @relation(fields: [workerId], references: [userId])
   date        DateTime
   quantity    Int
   createdAt   DateTime @default(now())
