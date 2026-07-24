@@ -6,7 +6,10 @@ import type { AuthUser } from "../../middleware/requireAuth.js";
 
 const addWorkerSchema = z.object({
   name: z.string().min(1),
+  email: z.string().email(),
+  password: z.string().min(6),
   phone: z.string().optional(),
+  address: z.string().optional(),
   pricePerPackage: z.coerce.number().positive(),
 });
 
@@ -19,7 +22,7 @@ class AddWorkerController {
   private readonly service = new AddWorkerService();
 
   async handle(req: Request, res: Response) {
-    console.log("AddWorkerController.handle called with body:", req.body);
+   
     const parsedBody = addWorkerSchema.safeParse(req.body);
 
     if (!parsedBody.success) {
@@ -31,7 +34,10 @@ class AddWorkerController {
     try {
       const worker = await this.service.handle({
         name: parsedBody.data.name,
+        email: parsedBody.data.email,
+        password: parsedBody.data.password,
         phone: parsedBody.data.phone,
+        address: parsedBody.data.address,
         pricePerPackage: parsedBody.data.pricePerPackage,
         imageFile: workerRequest.file,
         authUser: workerRequest.authUser,
