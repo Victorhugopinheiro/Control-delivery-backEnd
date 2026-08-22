@@ -25,7 +25,7 @@ class FilterEmployeesDeliveryController {
 
         const parsedQuery = filterEmployeesDeliverySchema.safeParse(req.query);
 
-        console.log("FilterEmployeesDeliveryController: Parsed query:", parsedQuery, "AuthUser:");
+        
 
         if (!parsedQuery.success) {
             return res.status(400).json({ message: "Invalid filter data" });
