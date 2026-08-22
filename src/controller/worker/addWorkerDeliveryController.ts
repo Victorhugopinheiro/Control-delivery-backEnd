@@ -41,7 +41,7 @@ class AddWorkerDeliveryController {
             });
 
 
-            return res.status(201).json({ delivery });
+            return res.status(201).json({ success: true });
         }
 
         catch (error) {

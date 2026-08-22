@@ -38,7 +38,14 @@ class ListWorkerDeliveriesService {
             if (Number.isNaN(parsedFromDate.getTime())) {
                 throw new AuthServiceError("Invalid fromDate", 400);
             }
-            dateFilter.gte = parsedFromDate;
+
+            const normalizedFromDate = new Date(Date.UTC(
+                parsedFromDate.getUTCFullYear(),
+                parsedFromDate.getUTCMonth(),
+                parsedFromDate.getUTCDate(),
+            ));
+
+            dateFilter.gte = normalizedFromDate;
         }
 
         if (toDate) {
@@ -46,7 +53,14 @@ class ListWorkerDeliveriesService {
             if (Number.isNaN(parsedToDate.getTime())) {
                 throw new AuthServiceError("Invalid toDate", 400);
             }
-            dateFilter.lte = parsedToDate;
+
+            const normalizedToDate = new Date(Date.UTC(
+                parsedToDate.getUTCFullYear(),
+                parsedToDate.getUTCMonth(),
+                parsedToDate.getUTCDate(),
+            ));
+
+            dateFilter.lte = normalizedToDate;
         }
 
         if (dateFilter.gte && dateFilter.lte && dateFilter.gte > dateFilter.lte) {
