@@ -7,14 +7,8 @@ class LogoutUserService {
       return;
     }
 
-    await prisma.refreshSession.updateMany({
-      where: {
-        tokenHash: hashToken(refreshToken),
-        revokedAt: null,
-      },
-      data: {
-        revokedAt: new Date(),
-      },
+    await prisma.refreshSession.deleteMany({
+      where: { tokenHash: hashToken(refreshToken) },
     });
   }
 }
