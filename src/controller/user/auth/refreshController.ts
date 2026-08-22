@@ -22,6 +22,12 @@ class RefreshController {
     try {
       const result = await this.service.handle(refreshToken);
 
+      if (!result.accessToken || !result.refreshToken) {
+        res.clearCookie("accessToken", clearCookieOptions);
+        res.clearCookie("refreshToken", clearCookieOptions);
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       res.cookie("accessToken", result.accessToken, accessCookieOptions);
       res.cookie("refreshToken", result.refreshToken, refreshCookieOptions);
 
