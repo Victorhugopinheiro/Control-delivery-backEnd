@@ -1,5 +1,4 @@
-
-import Router from 'express';
+import { Router } from "express";
 import { authRouter } from './user/auth.js';
 import workerRouter from './worker/workerApi.js';
 const router = Router();

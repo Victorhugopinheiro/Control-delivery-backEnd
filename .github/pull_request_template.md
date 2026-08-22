@@ -24,5 +24,5 @@ Add request or response examples, logs, or screenshots if helpful.
 
 ### Tiny PR version (use when change is very small)
 - What changed:
-- Why:
+- Wh
 - Tested:

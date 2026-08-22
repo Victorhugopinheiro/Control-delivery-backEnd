@@ -21,6 +21,11 @@ export async function requireAuth(req: Request & { authUser?: AuthUser }, res: R
 
   try {
     const authUser = await verifyAccessToken(token);
+
+    if(!authUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     req.authUser = authUser;
     next();
   } catch {
