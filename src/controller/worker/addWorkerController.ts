@@ -49,6 +49,15 @@ class AddWorkerController {
         return res.status(error.statusCode).json({ message: error.message });
       }
 
+      console.error("AddWorkerController error:", error);
+
+      if (process.env.NODE_ENV !== "production") {
+        return res.status(500).json({
+          message: "Internal server error",
+          detail: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+
       return res.status(500).json({ message: "Internal server error" });
     }
   }
