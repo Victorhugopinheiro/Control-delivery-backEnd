@@ -1,6 +1,5 @@
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../../lib/jwt.js";
 import { prisma } from "../../../lib/prisma.js";
-import type { Prisma } from "../../../generated/prisma/client.js";
 import { hashToken } from "../../../lib/tokenHash.js";
 import { AuthServiceError } from "./authErrors.js";
 import type { AuthenticatedUser } from "./loginUserService.js";
@@ -17,48 +16,42 @@ class RefreshUserService {
       const { userId } = await verifyRefreshToken(refreshToken);
       const incomingTokenHash = hashToken(refreshToken);
 
-      const existingSession = await prisma.refreshSession.findUnique({
-        where: { tokenHash: incomingTokenHash },
-      });
-
-      if (!existingSession) {
-        await prisma.refreshSession.updateMany({
-          where: { userId, revokedAt: null },
-          data: { revokedAt: new Date() },
-        });
-        throw new AuthServiceError("Unauthorized", 401);
-      }
-
-      if (existingSession.revokedAt || existingSession.expiresAt <= new Date()) {
-        throw new AuthServiceError("Unauthorized", 401);
-      }
-
       const user = await prisma.user.findUnique({ where: { id: userId } });
 
       if (!user) {
         throw new AuthServiceError("Unauthorized", 401);
       }
 
+      const existingSession = await prisma.refreshSession.findUnique({
+        where: { tokenHash: incomingTokenHash, userId: userId },
+      });
+
+      if (!existingSession) {
+        await prisma.refreshSession.deleteMany({ where: { userId } });
+        throw new AuthServiceError("Unauthorized", 401);
+      }
+
+      if (existingSession.expiresAt <= new Date()) {
+        await prisma.refreshSession.delete({ where: { id: existingSession.id } });
+        throw new AuthServiceError("Unauthorized", 401);
+      }
+
+      
       const newRefreshBundle = await signRefreshToken(user.id);
       const newTokenHash = hashToken(newRefreshBundle.token);
 
-      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        const createdSession = await tx.refreshSession.create({
-          data: {
-            userId: user.id,
-            tokenHash: newTokenHash,
-            expiresAt: newRefreshBundle.expiresAt,
-          },
-        });
-
-        await tx.refreshSession.update({
-          where: { id: existingSession.id },
-          data: {
-            revokedAt: new Date(),
-            replacedBySessionId: createdSession.id,
-          },
-        });
+      // Rotate the session row in place instead of inserting a new row per refresh,
+      // otherwise the table grows forever. Keying the update on the current tokenHash
+      // makes it atomic: only one concurrent request can match and win the rotation,
+      // the rest find 0 rows updated and fail with 401.
+      const rotated = await prisma.refreshSession.updateMany({
+        where: { id: existingSession.id, tokenHash: incomingTokenHash },
+        data: { tokenHash: newTokenHash, expiresAt: newRefreshBundle.expiresAt },
       });
+
+      if (rotated.count !== 1) {
+        throw new AuthServiceError("Unauthorized", 401);
+      }
 
       const accessToken = await signAccessToken({
         sub: user.id,
