@@ -17,7 +17,7 @@ RUN npm ci
 COPY . .
 
 # Run your build script: "prisma generate && tsc -p tsconfig.json"
-RUN npm run build
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npm run build
 
 # Expose port (matches PORT in environment or default 3000)
 EXPOSE 5000
