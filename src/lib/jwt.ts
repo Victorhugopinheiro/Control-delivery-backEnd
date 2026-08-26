@@ -13,9 +13,9 @@ function getSecret(value: string | undefined, name: string) {
 
 const accessSecret = () => getSecret(process.env.JWT_ACCESS_SECRET, "JWT_ACCESS_SECRET");
 const refreshSecret = () => getSecret(process.env.JWT_REFRESH_SECRET, "JWT_REFRESH_SECRET");
-const issuer = process.env.JWT_ISSUER ?? "delivery-backend";
-const accessAudience = process.env.JWT_ACCESS_AUDIENCE ?? "delivery-backend-web";
-const refreshAudience = process.env.JWT_REFRESH_AUDIENCE ?? "delivery-backend-refresh";
+const issuer = process.env.JWT_ISSUER!
+const accessAudience = process.env.JWT_ACCESS_AUDIENCE!
+const refreshAudience = process.env.JWT_REFRESH_AUDIENCE!
 const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
 const REFRESH_TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60;
 
