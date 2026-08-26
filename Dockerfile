@@ -20,7 +20,7 @@ COPY . .
 RUN npm run build
 
 # Expose port (matches PORT in environment or default 3000)
-EXPOSE 3000
+EXPOSE 5000
 
 # Start production server: "node dist/server.js"
 CMD ["npm", "run", "start"]
