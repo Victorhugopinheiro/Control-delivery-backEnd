@@ -13,7 +13,13 @@ class MeController {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    return res.status(200).json({ user: meRequest.authUser });
+    return res.status(200).json({
+      user: {
+        name: meRequest.authUser.name,
+        email: meRequest.authUser.email,
+        role: meRequest.authUser.role,
+      }
+    });
   }
 }
 

@@ -5,7 +5,6 @@ import { hashToken } from "../../../lib/tokenHash.js";
 import { AuthServiceError } from "./authErrors.js";
 
 export type AuthenticatedUser = {
-  id: string;
   name: string;
   email: string;
   role: "ADMIN" | "WORKER";
@@ -51,7 +50,6 @@ class LoginUserService {
       accessToken,
       refreshToken: refreshBundle.token,
       user: {
-        id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,

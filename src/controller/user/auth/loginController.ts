@@ -25,7 +25,7 @@ class LoginController {
       res.cookie("accessToken", result.accessToken, accessCookieOptions);
       res.cookie("refreshToken", result.refreshToken, refreshCookieOptions);
 
-      return res.status(200).json({ success:true });
+      return res.status(200).json({ success: true, user: result.user });
     } catch (error) {
       if (error instanceof AuthServiceError) {
         return res.status(error.statusCode).json({ message: error.message });
