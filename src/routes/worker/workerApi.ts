@@ -8,6 +8,7 @@ import UpdateEmployeeController from "../../controller/worker/updateEmployeeCont
 import { requireAuth } from "../../middleware/requireAuth.js";
 import { requireRole } from "../../middleware/requireRole.js";
 import FilterEmployeesDeliveryController from "../../controller/worker/filterEmployeesDeliveryController.js";
+import FilterMyDeliveriesController from "../../controller/worker/filterMyDeliveriesController.js";
 
 const workerRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -17,6 +18,7 @@ const getEmployeesController = new GetEmployeesController();
 const listWorkerDeliveriesController = new ListWorkerDeliveriesController();
 const updateEmployeeController = new UpdateEmployeeController();
 const filterEmployeesDeliveryController = new FilterEmployeesDeliveryController();
+const filterMyDeliveriesController = new FilterMyDeliveriesController();
 
 workerRouter.post(
     "/addWorker",
@@ -52,6 +54,13 @@ workerRouter.get(
     requireAuth,
     requireRole("ADMIN"),
     (req, res) => filterEmployeesDeliveryController.handle(req, res),
+)
+
+workerRouter.get(
+    "/myDelivery",
+    requireAuth,
+    requireRole("WORKER"),
+    (req, res) => filterMyDeliveriesController.handle(req, res),
 )
 
 workerRouter.patch(
